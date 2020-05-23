@@ -11,11 +11,11 @@ const data = {
 };
 
 router.get('/all', (req, res) => { res.send(data) });
-router.get('/version', (req, res) => { res.send(data.version) });
+router.get('/version', (req, res) => { res.send({ version: data.version }) });
 router.get('/downloads', (req, res) => { res.send(data.downloads) });
 router.get('/extensions', (req, res) => { res.send(data.extensions) });
-router.get('/discord-count', (req, res) => { res.send(data.discordUserCount) });
-router.get('/patreon-count', (req, res) => { res.send(data.patreonCount) });
+router.get('/discord-count', (req, res) => { res.send({ discordUserCount: data.discordUserCount }) });
+router.get('/patreon-count', (req, res) => { res.send({ patreonCount: data.patreonCount }) });
 
 getData().then(() => {
   setInterval(async () => {
