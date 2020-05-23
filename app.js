@@ -9,6 +9,7 @@ const app = express();
 const whitelist = [
     'https://luckperms.net',
     'https://luckperms.turbotailz.com',
+    'http://localhost:8083'
 ];
 const corsOptions = {
   origin: (origin, callback) => {
