@@ -18,23 +18,17 @@ router.get('/extensions', (req, res) => { res.send(data.extensions) });
 router.get('/discord-count', (req, res) => { res.send(data.discordUserCount) });
 router.get('/patreon-count', (req, res) => { res.send(data.patreonCount) });
 
-try {
-  getJenkinsData();
-  getDiscordUserCount();
-  getPatreonCount();
-} catch (error) {
-  console.error(error);
+async function getData() {
+  await getJenkinsData();
+  await getDiscordUserCount();
+  await getPatreonCount();
 }
 
-setInterval(() => {
-  try {
-    getJenkinsData();
-    getDiscordUserCount();
-    getPatreonCount();
-  } catch (error) {
-    console.error(error);
-  }
-}, 60000);
+getData().then(() => {
+  setInterval(async () => {
+    await getData();
+  }, 60000);
+});
 
 async function getJenkinsData() {
   try {
