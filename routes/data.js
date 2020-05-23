@@ -10,7 +10,6 @@ const data = {
   patreonCount: null,
 };
 
-/* GET home page. */
 router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send(data.version) });
 router.get('/downloads', (req, res) => { res.send(data.downloads) });
@@ -18,17 +17,21 @@ router.get('/extensions', (req, res) => { res.send(data.extensions) });
 router.get('/discord-count', (req, res) => { res.send(data.discordUserCount) });
 router.get('/patreon-count', (req, res) => { res.send(data.patreonCount) });
 
+getData().then(() => {
+  setInterval(async () => {
+    await getJenkinsData();
+  }, 30000);
+  setInterval(async () => {
+    await getDiscordUserCount();
+    await getPatreonCount();
+  }, 300000);
+});
+
 async function getData() {
   await getJenkinsData();
   await getDiscordUserCount();
   await getPatreonCount();
 }
-
-getData().then(() => {
-  setInterval(async () => {
-    await getData();
-  }, 60000);
-});
 
 async function getJenkinsData() {
   try {
