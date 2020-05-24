@@ -6,28 +6,10 @@ const dataRouter = require('./routes/data');
 
 const app = express();
 
-const whitelist = [
-    'https://luckperms.net',
-    'https://luckperms.turbotailz.com',
-    'http://localhost:8083'
-];
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Ignore CORS check if accessing directly from browser
-    if (!origin) return callback(null, true);
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log(origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use('/data', dataRouter);
 
