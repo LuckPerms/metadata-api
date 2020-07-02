@@ -6,6 +6,8 @@ const data = {
   version: null,
   downloads: {},
   extensions: {},
+  additionalPlugins: {},
+  placeholderExpansions: {},
   discordUserCount: null,
   patreonCount: null,
 };
@@ -14,6 +16,8 @@ router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send({ version: data.version }) });
 router.get('/downloads', (req, res) => { res.send(data.downloads) });
 router.get('/extensions', (req, res) => { res.send(data.extensions) });
+router.get('/additional-plugins', (req, res) => { res.send(data.additionalPlugins) });
+router.get('/placeholder-expansions', (req, res) => { res.send(data.placeholderExpansions) });
 router.get('/discord-count', (req, res) => { res.send({ discordUserCount: data.discordUserCount }) });
 router.get('/patreon-count', (req, res) => { res.send({ patreonCount: data.patreonCount }) });
 
@@ -44,6 +48,13 @@ async function getJenkinsData() {
       data.downloads[download] = `${jenkinsData.data.url}artifact/${artifact.relativePath}`;
     });
 
+    // Get placeholder expansions
+    const placeholderData = await axios.get('https://ci.lucko.me/job/LuckPermsPlaceholders/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]');
+    placeholderData.data.artifacts.forEach((artifact) => {
+      const download = artifact.relativePath.split('/')[0];
+      data.placeholderExpansions[download] = `${placeholderData.data.url}artifact/${artifact.relativePath}`;
+    });
+
     // Get extensions
     const extensionIds = [
         'extension-legacy-api',
@@ -51,6 +62,14 @@ async function getJenkinsData() {
     ];
     extensionIds.forEach((extensionId) => {
       getExtensionData(extensionId);
+    });
+
+    // Get additional plugins
+    const additionalPluginIds = [
+      'extracontexts',
+    ];
+    additionalPluginIds.forEach((additionalPluginId) => {
+      getAdditionalPluginData(additionalPluginId);
     });
   } catch (error) {
     console.error(error);
@@ -63,6 +82,18 @@ async function getExtensionData(extensionId) {
     extensionData.data.artifacts.forEach((artifact) => {
       const extension = `${extensionData.data.url.split('/')[4]}`;
       data.extensions[extension] = `${extensionData.data.url}artifact/${artifact.relativePath}`;
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getAdditionalPluginData(additionalPluginId) {
+  try {
+    const additionalPluginData = await axios.get(`https://ci.lucko.me/job/${additionalPluginId}/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]`);
+    additionalPluginData.data.artifacts.forEach((artifact) => {
+      const additionalPlugin = `${additionalPluginData.data.url.split('/')[4]}`;
+      data.additionalPlugins[additionalPlugin] = `${additionalPluginData.data.url}artifact/${artifact.relativePath}`;
     });
   } catch (error) {
     console.error(error);
