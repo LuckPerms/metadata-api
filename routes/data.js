@@ -14,10 +14,10 @@ const data = {
 
 router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send({ version: data.version }) });
-router.get('/downloads', (req, res) => { res.send(data.downloads) });
-router.get('/extensions', (req, res) => { res.send(data.extensions) });
-router.get('/additional-plugins', (req, res) => { res.send(data.additionalPlugins) });
-router.get('/placeholder-expansions', (req, res) => { res.send(data.placeholderExpansions) });
+router.get('/downloads', (req, res) => { res.send({ downloads: data.downloads }) });
+router.get('/extensions', (req, res) => { res.send({ extensions: data.extensions }) });
+router.get('/additional-plugins', (req, res) => { res.send({ additionalPlugins: data.additionalPlugins }) });
+router.get('/placeholder-expansions', (req, res) => { res.send({ placeholderExpansions: data.placeholderExpansions }) });
 router.get('/discord-count', (req, res) => { res.send({ discordUserCount: data.discordUserCount }) });
 router.get('/patreon-count', (req, res) => { res.send({ patreonCount: data.patreonCount }) });
 
