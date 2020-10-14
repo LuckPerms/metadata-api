@@ -2,7 +2,8 @@ const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
 
-const dataRouter = require('./routes/data');
+const dataRouter = require('./routes/data').router;
+const translationRouter = require('./routes/translations').router;
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
 app.use('/data', dataRouter);
+app.use('/translation', translationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res) {

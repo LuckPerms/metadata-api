@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
+const config = require('../config.json');
 
 const data = {
   version: null,
@@ -12,6 +13,10 @@ const data = {
   patreonCount: null,
 };
 
+const translations = {
+  languages: {}
+};
+
 router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send({ version: data.version }) });
 router.get('/downloads', (req, res) => { res.send({ downloads: data.downloads }) });
@@ -20,21 +25,28 @@ router.get('/additional-plugins', (req, res) => { res.send({ additionalPlugins: 
 router.get('/placeholder-expansions', (req, res) => { res.send({ placeholderExpansions: data.placeholderExpansions }) });
 router.get('/discord-count', (req, res) => { res.send({ discordUserCount: data.discordUserCount }) });
 router.get('/patreon-count', (req, res) => { res.send({ patreonCount: data.patreonCount }) });
+router.get('/translations', (req, res) => { res.send(translations) });
 
-getData().then(() => {
+const setupPromise = getData().then(() => {
   setInterval(async () => {
     await getJenkinsData();
-  }, 30000);
+  }, 30000); // 30 seconds
   setInterval(async () => {
     await getDiscordUserCount();
     await getPatreonCount();
-  }, 300000);
+  }, 300000); // 5 minutes
+  setInterval(async () => {
+    await getTranslationData();
+  }, 21600000); // 6 hours
 });
 
 async function getData() {
+  console.log("Requesting initial data..");
   await getJenkinsData();
   await getDiscordUserCount();
   await getPatreonCount();
+  await getTranslationData();
+  console.log(".. done");
 }
 
 async function getJenkinsData() {
@@ -118,4 +130,47 @@ async function getPatreonCount() {
   }
 }
 
-module.exports = router;
+async function getTranslationData() {
+  try {
+    const result = {};
+
+    const projectData = await axios.get('https://crowdin.com/api/v2/projects/404960', {
+      headers: {
+        'Authorization': `Bearer ${config.crowdinKey}`
+      }
+    });
+    const languages = projectData.data.data.targetLanguages;
+    languages.forEach((language) => {
+      result[language.id] = {
+        name: language.name,
+        localeTag: language.locale.replace("-", "_"),
+        progress: 0
+      }
+    });
+
+    const progressData = await axios.get('https://crowdin.com/api/v2/projects/404960/languages/progress', {
+      headers: {
+        'Authorization': `Bearer ${config.crowdinKey}` 
+      }
+    });
+    progressData.data.data.forEach((progress) => {
+      const id = progress.data.languageId;
+      const percent = progress.data.translationProgress;
+
+      const language = result[id];
+      if (language !== null) {
+        language.progress = percent;
+      }
+    });
+
+    translations.languages = result;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+module.exports = {
+  router: router,
+  translations: translations,
+  setup: setupPromise
+};
