@@ -31,7 +31,7 @@ router.get('/:localeId', (req, res) => {
 getData().then(() => {
   setInterval(async () => {
     await getTranslations();
-  }, 3660000); // 1 hours (+ 1 minute, to make sure we are behind the getTranslationData task)
+  }, 21660000); // 6 hours (+ 1 minute, to make sure we are behind the getTranslationData task)
 });
 
 async function getData() {
