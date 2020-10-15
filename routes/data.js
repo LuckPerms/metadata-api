@@ -144,7 +144,8 @@ async function getTranslationData() {
       result[language.id] = {
         name: language.name,
         localeTag: language.locale.replace("-", "_"),
-        progress: 0
+        progress: 0,
+        contributors: []
       }
     });
 
@@ -160,6 +161,57 @@ async function getTranslationData() {
       const language = result[id];
       if (language !== null) {
         language.progress = percent;
+      }
+    });
+
+    const contributorsRequest = await axios.post(
+      'https://crowdin.com/api/v2/projects/404960/reports',
+      {
+        name: 'top-members',
+        schema: {
+          unit: 'strings',
+          format: 'json'
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${config.crowdinKey}`
+        }
+      }
+    );
+    const contributorsRequestId = contributorsRequest.data.data.identifier;
+
+    let waiting = true;
+    while (waiting) {
+      const statusRequest = await axios.get(`https://crowdin.com/api/v2/projects/404960/reports/${contributorsRequestId}`, {
+        headers: {
+          'Authorization': `Bearer ${config.crowdinKey}` 
+        }
+      });
+      waiting = statusRequest.data.data.status !== "finished";
+
+      if (waiting) {
+        // wait a couple of seconds before checking again
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    const downloadRequest = await axios.get(`https://crowdin.com/api/v2/projects/404960/reports/${contributorsRequestId}/download`, {
+      headers: {
+        'Authorization': `Bearer ${config.crowdinKey}` 
+      }
+    });
+    const reportUrl = downloadRequest.data.data.url;
+
+    const contributorsReport = await axios.get(reportUrl);
+    contributorsReport.data.data.forEach((user) => {
+      if (user.translated >= 30) {
+        user.languages.forEach((lang) => {
+          const language = result[lang.id];
+          if (language !== null) {
+            language.contributors.push({name: user.user.username, translated: user.translated});
+          }
+        });
       }
     });
 

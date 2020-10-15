@@ -49,16 +49,19 @@ async function getTranslations() {
 
     for (const [languageId, language] of Object.entries(data.translations.languages)) {
       if (language.progress !== 0) {
-        const body = {
-          targetLanguageId: languageId,
-          fileIds: [2],
-          skipUntranslatedStrings: true
-        };
-        const request = await axios.post('https://crowdin.com/api/v2/projects/404960/translations/exports', body, {
-          headers: {
-            'Authorization': `Bearer ${config.crowdinKey}`
+        const request = await axios.post(
+          'https://crowdin.com/api/v2/projects/404960/translations/exports',
+          {
+            targetLanguageId: languageId,
+            fileIds: [2],
+            skipUntranslatedStrings: true
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${config.crowdinKey}`
+            }
           }
-        });
+        );
 
         const url = request.data.data.url;
         const downloadRequest = await axios.get(url, {responseType: 'stream'});
