@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const config = require('../config.json');
+const extraDonors = require('../extra-donors.json');
 
 const data = {
   version: null,
@@ -17,6 +18,10 @@ const translations = {
   languages: {}
 };
 
+const donors = {
+  donors: []
+};
+
 router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send({ version: data.version }) });
 router.get('/downloads', (req, res) => { res.send({ downloads: data.downloads }) });
@@ -26,6 +31,7 @@ router.get('/placeholder-expansions', (req, res) => { res.send({ placeholderExpa
 router.get('/discord-count', (req, res) => { res.send({ discordUserCount: data.discordUserCount }) });
 router.get('/patreon-count', (req, res) => { res.send({ patreonCount: data.patreonCount }) });
 router.get('/translations', (req, res) => { res.send(translations) });
+router.get('/donors', (req, res) => { res.send(donors) });
 
 const setupPromise = getData().then(() => {
   setInterval(async () => {
@@ -36,6 +42,9 @@ const setupPromise = getData().then(() => {
     await getPatreonCount();
   }, 300000); // 5 minutes
   setInterval(async () => {
+    await getPatreons();
+  }, 3600000); // 1 hour
+  setInterval(async () => {
     await getTranslationData();
   }, 21600000); // 6 hours
 });
@@ -45,6 +54,7 @@ async function getData() {
   await getJenkinsData();
   await getDiscordUserCount();
   await getPatreonCount();
+  await getPatreons();
   await getTranslationData();
   console.log(".. done");
 }
@@ -114,17 +124,119 @@ async function getAdditionalPluginData(additionalPluginId) {
 
 async function getDiscordUserCount() {
   try {
-    const discordData = await axios.get('https://discordapp.com/api/invites/luckperms?with_counts=true');
+    const discordData = await axios.get('https://discord.com/api/invites/luckperms?with_counts=true');
     data.discordUserCount = discordData.data.approximate_member_count;
   } catch (error) {
     console.error('getDiscordUserCount error:', error.response.status, error.response.statusText);
   }
 }
 
+function encodePatreonUrl(url) {
+  return url.replace("")
+}
+
+function encodePatreonUrl(url) {
+  return url.replace(/[\[\]]/g, function(a) {
+      return {
+          '[': '%5B',
+          ']': '%5D'
+      }[a];
+  });
+}
+
 async function getPatreonCount() {
   try {
-    const patreonData = await axios.get('https://www.patreon.com/api/campaigns/2298876?include=patron_count&fields[campaign]=patron_count');
+    const patreonData = await axios.get(encodePatreonUrl('https://www.patreon.com/api/oauth2/v2/campaigns/2298876?fields%5Bcampaign%5D=patron_count'), {
+      headers: {
+        'Authorization': `Bearer ${config.patreonKey}` 
+      }
+    });
     data.patreonCount = patreonData.data.data.attributes.patron_count;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function getPatreons() {
+  try {
+    let url = encodePatreonUrl('https://www.patreon.com/api/oauth2/v2/campaigns/2298876/members?include=user,currently_entitled_tiers&fields[member]=full_name,lifetime_support_cents&fields[user]=social_connections,hide_pledges&fields[tier]=title');
+    let result = [];
+
+    if (extraDonors) {
+      result.push(...extraDonors);
+    }
+
+    while (url !== null) {
+      const patreonsData = await axios.get(url, {headers: {'Authorization': `Bearer ${config.patreonKey}`}});
+      
+      const associatedUsers = {};
+      const associatedTiers = {};
+
+      patreonsData.data.included.forEach((includedData) => {
+        if (includedData.type === 'user') {
+          let userData = {
+            id: includedData.id,
+            hide: includedData.attributes.hide_pledges
+          };
+          if (includedData.attributes.social_connections) {
+            userData.discord = includedData.attributes.social_connections.discord;
+          }
+          associatedUsers[includedData.id] = userData;
+        } else if (includedData.type === 'tier') {
+          associatedTiers[includedData.id] = {
+            id: includedData.id,
+            name: includedData.attributes.title
+          };
+        }
+      });
+
+      patreonsData.data.data.forEach((patreonData => {
+        const username = patreonData.attributes.full_name.trim();
+        const amount = patreonData.attributes.lifetime_support_cents;
+
+        // exclude anything under $5
+        if (amount < 500) {
+          return;
+        }
+
+        let userResult = {
+          name: username,
+          discord: null,
+          tiers: []
+        };
+
+        const userId = patreonData.relationships.user.data.id;
+        if (userId in associatedUsers){
+          const user = associatedUsers[userId];
+
+          // respect users choice to make their pledge hidden
+          if (user.hide) {
+            return;
+          }
+
+          if (user.discord && user.discord.user_id) {
+            userResult.discord = user.discord.user_id;
+          }
+        }
+
+        patreonData.relationships.currently_entitled_tiers.data.forEach((tierInfo) => {
+          if (tierInfo.id in associatedTiers) {
+            userResult.tiers.push(associatedTiers[tierInfo.id].name);
+          }
+        });
+        
+        result.push(userResult);
+      }));
+
+      if (patreonsData.data.links && patreonsData.data.links.next) {
+        url = patreonsData.data.links.next;
+      } else {
+        url = null;
+      }
+    }
+
+    donors.donors = result;
+
   } catch (error) {
     console.error(error);
   }
