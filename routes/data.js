@@ -6,6 +6,7 @@ const extraDonors = require('../extra-donors.json');
 
 const data = {
   version: null,
+  versionTimestamp: null,
   downloads: {},
   extensions: {},
   additionalPlugins: {},
@@ -23,7 +24,7 @@ const donors = {
 };
 
 router.get('/all', (req, res) => { res.send(data) });
-router.get('/version', (req, res) => { res.send({ version: data.version }) });
+router.get('/version', (req, res) => { res.send({ version: data.version, versionTimestamp: data.versionTimestamp }) });
 router.get('/downloads', (req, res) => { res.send({ downloads: data.downloads }) });
 router.get('/extensions', (req, res) => { res.send({ extensions: data.extensions }) });
 router.get('/additional-plugins', (req, res) => { res.send({ additionalPlugins: data.additionalPlugins }) });
@@ -62,9 +63,10 @@ async function getData() {
 async function getJenkinsData() {
   try {
     // Get LuckPerms files and version data
-    const jenkinsData = await axios.get('https://ci.lucko.me/job/LuckPerms/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]');
+    const jenkinsData = await axios.get('https://ci.lucko.me/job/LuckPerms/lastSuccessfulBuild/api/json?tree=url,timestamp,artifacts[fileName,relativePath]');
     const fileName = jenkinsData.data.artifacts[0].fileName;
     data.version = fileName.split('-').pop().slice(0, -4);
+    data.versionTimestamp = jenkinsData.data.timestamp;
     jenkinsData.data.artifacts.forEach((artifact) => {
       const download = artifact.relativePath.split('/')[0];
       data.downloads[download] = `${jenkinsData.data.url}artifact/${artifact.relativePath}`;
