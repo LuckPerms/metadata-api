@@ -80,13 +80,16 @@ async function getJenkinsData() {
     const changeLogData = await axios.get('https://ci.lucko.me/job/LuckPerms/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]');
     const log = [];
     changeLogData.data.builds.forEach((buildData) => {
-      if (buildData.result === 'SUCCESS' && buildData.changeSet && buildData.changeSet._class === 'hudson.plugins.git.GitChangeSet') {
-        log.push({
-          version: buildData.artifacts[0].fileName.split('-').pop().slice(0, -4),
-          timestamp: buildData.timestamp,
-          title: buildData.changeSet.items.msg,
-          commit: buildData.changeSet.items.commitId
-        });
+      if (buildData.result === 'SUCCESS' && buildData.changeSet && buildData.changeSet._class === 'hudson.plugins.git.GitChangeSetList') {
+        const changes = buildData.changeSet.items;
+        if (changes.length > 0) {
+          log.push({
+            version: buildData.artifacts[0].fileName.split('-').pop().slice(0, -4),
+            timestamp: buildData.timestamp,
+            title: changes[0].msg,
+            commit: changes[0].commitId
+          });
+        }
       }
     });
     data.changeLog = log;
