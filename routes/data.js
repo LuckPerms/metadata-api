@@ -7,6 +7,7 @@ const extraDonors = require('../extra-donors.json');
 const data = {
   version: null,
   versionTimestamp: null,
+  changeLog: [],
   downloads: {},
   extensions: {},
   additionalPlugins: {},
@@ -25,6 +26,7 @@ const donors = {
 
 router.get('/all', (req, res) => { res.send(data) });
 router.get('/version', (req, res) => { res.send({ version: data.version, versionTimestamp: data.versionTimestamp }) });
+router.get('/changelog', (req, res) => { res.send({ changeLog: data.changeLog }) });
 router.get('/downloads', (req, res) => { res.send({ downloads: data.downloads }) });
 router.get('/extensions', (req, res) => { res.send({ extensions: data.extensions }) });
 router.get('/additional-plugins', (req, res) => { res.send({ additionalPlugins: data.additionalPlugins }) });
@@ -52,11 +54,13 @@ const setupPromise = getData().then(() => {
 
 async function getData() {
   console.log("Requesting initial data..");
-  await getJenkinsData();
-  await getDiscordUserCount();
-  await getPatreonCount();
-  await getPatreons();
-  await getTranslationData();
+  await Promise.all([
+    getJenkinsData(),
+    getDiscordUserCount(),
+    getPatreonCount(),
+    getPatreons(),
+    getTranslationData()
+  ]);
   console.log(".. done");
 }
 
@@ -71,6 +75,21 @@ async function getJenkinsData() {
       const download = artifact.relativePath.split('/')[0];
       data.downloads[download] = `${jenkinsData.data.url}artifact/${artifact.relativePath}`;
     });
+
+    // Get changelog
+    const changeLogData = await axios.get('https://ci.lucko.me/job/LuckPerms/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]');
+    const log = [];
+    changeLogData.data.builds.forEach((buildData) => {
+      if (buildData.result === 'SUCCESS' && buildData.changeSet && buildData.changeSet._class === 'hudson.plugins.git.GitChangeSet') {
+        log.push({
+          version: buildData.artifacts[0].fileName.split('-').pop().slice(0, -4),
+          timestamp: buildData.timestamp,
+          title: buildData.changeSet.items.msg,
+          commit: buildData.changeSet.items.commitId
+        });
+      }
+    });
+    data.changeLog = log;
 
     // Get placeholder expansions
     const placeholderData = await axios.get('https://ci.lucko.me/job/LuckPermsPlaceholders/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]');
