@@ -1,5 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
+
+const expressPretty = require('express-prettify');
 const cors = require('cors');
 
 const dataRouter = require('./routes/data').router;
@@ -8,7 +10,7 @@ const translationRouter = require('./routes/translations').router;
 const app = express();
 
 app.use(logger('dev'));
-app.use(express.json());
+app.use(expressPretty({ query: 'pretty' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
