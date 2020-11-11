@@ -13,6 +13,7 @@ app.use(logger('dev'));
 app.use(expressPretty({ query: 'pretty' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
+app.disable('x-powered-by');
 
 app.use('/data', dataRouter);
 app.use('/translation', translationRouter);

@@ -17,6 +17,7 @@ const data = {
 };
 
 const translations = {
+  cacheMaxAge: 604800000, // 7 days (milliseconds)
   languages: {}
 };
 
