@@ -242,9 +242,6 @@ luckperms.logs.export-prefix=EXPORTAR
 ...
 ```
 
-* `discord` refers to the users Discord snowflake ID - can be null.
-* `tiers` refers to the Patreon tiers the user currently has - can be empty.
-
 #### Response (error, `500`)
 
 ```
