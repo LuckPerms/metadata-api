@@ -286,7 +286,7 @@ async function getTranslationData() {
       }
     });
 
-    const progressData = await axios.get('https://crowdin.com/api/v2/projects/404960/languages/progress', {
+    const progressData = await axios.get('https://crowdin.com/api/v2/projects/404960/languages/progress?limit=100', {
       headers: {
         'Authorization': `Bearer ${config.crowdinKey}` 
       }
