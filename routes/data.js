@@ -345,7 +345,7 @@ async function getTranslationData() {
       if (user.translated >= 30) {
         user.languages.forEach((lang) => {
           const language = result[lang.id];
-          if (language !== null) {
+          if (language) {
             language.contributors.push({name: user.user.username, translated: user.translated});
           }
         });
