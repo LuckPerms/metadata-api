@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export interface JenkinsPlaceholdersData {
-  placeholderExpansions: Map<string, string>;
+  placeholderExpansions: Record<string, string>;
 }
 
 const url =
@@ -10,11 +10,11 @@ const url =
 export async function fetchData(): Promise<JenkinsPlaceholdersData> {
   const resp = (await axios.get(url)).data;
 
-  const placeholderExpansions = new Map<string, string>();
+  const placeholderExpansions: Record<string, string> = {};
   for (const artifact of resp.artifacts) {
     const path = artifact.relativePath;
     const id = path.split('/')[0];
-    placeholderExpansions.set(id, `${resp.url}artifact/${path}`);
+    placeholderExpansions[id] = `${resp.url}artifact/${path}`;
   }
 
   return { placeholderExpansions };

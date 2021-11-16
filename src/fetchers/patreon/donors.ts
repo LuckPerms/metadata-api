@@ -20,8 +20,6 @@ export async function fetchData(): Promise<PatreonDonorsData> {
   let url: string | null = startUrl;
   let donors: Array<PatreonDonorsInfo> = [];
 
-  // todo: extra donors
-
   while (url !== null) {
     url = await fetchDataPage(url, donors);
   }
@@ -35,8 +33,8 @@ async function fetchDataPage(
 ): Promise<string | null> {
   const resp = (await axios.get(url, patreonAuth)).data;
 
-  const associatedUsers = new Map<string, any>();
-  const associatedTiers = new Map<string, any>();
+  const associatedUsers: Record<string, any> = {};
+  const associatedTiers: Record<string, any> = {};
 
   for (const entity of resp.included) {
     if (entity.type === 'user') {
@@ -47,12 +45,12 @@ async function fetchDataPage(
       if (entity.attributes.social_connections) {
         userData.discord = entity.attributes.social_connections.discord;
       }
-      associatedUsers.set(entity.id, userData);
+      associatedUsers[entity.id] = userData;
     } else if (entity.type === 'tier') {
-      associatedTiers.set(entity.id, {
+      associatedTiers[entity.id] = {
         id: entity.id,
         name: entity.attributes.title,
-      });
+      };
     }
   }
 
@@ -74,7 +72,7 @@ async function fetchDataPage(
     const userId = patron.relationships.user.data.id;
     if (userId in associatedUsers) {
       // respect users choice to make their pledge hidden
-      const user = associatedUsers.get(userId);
+      const user = associatedUsers[userId];
       if (user.hide) {
         continue;
       }
@@ -86,7 +84,7 @@ async function fetchDataPage(
 
     for (const tierInfo of patron.relationships.currently_entitled_tiers.data) {
       if (tierInfo.id in associatedTiers) {
-        userResult.tiers.push(associatedTiers.get(tierInfo.id).name);
+        userResult.tiers.push(associatedTiers[tierInfo.id].name);
       }
     }
 

@@ -12,17 +12,17 @@ export class DataRouter {
 
   constructor(dataManager: DataManager) {
     this.dataManager = dataManager;
-    this.express.get('/all', this.all);
-    this.express.get('/version', this.version);
-    this.express.get('/changelog', this.changelog);
-    this.express.get('/downloads', this.downloads);
-    this.express.get('/extensions', this.extensions);
-    this.express.get('/additional-plugins', this.additionalPlugins);
-    this.express.get('/placeholder-expansions', this.placeholderExpansions);
-    this.express.get('/discord-count', this.discordCount);
-    this.express.get('/patreon-count', this.patreonCount);
-    this.express.get('/translations', this.translations);
-    this.express.get('/donors', this.donors);
+    this.express.get('/all', this.all.bind(this));
+    this.express.get('/version', this.version.bind(this));
+    this.express.get('/changelog', this.changelog.bind(this));
+    this.express.get('/downloads', this.downloads.bind(this));
+    this.express.get('/extensions', this.extensions.bind(this));
+    this.express.get('/additional-plugins', this.additionalPlugins.bind(this));
+    this.express.get('/placeholder-expansions', this.placeholders.bind(this));
+    this.express.get('/discord-count', this.discordCount.bind(this));
+    this.express.get('/patreon-count', this.patreonCount.bind(this));
+    this.express.get('/translations', this.translations.bind(this));
+    this.express.get('/donors', this.donors.bind(this));
   }
 
   all(_: Request, res: Response) {
@@ -70,7 +70,7 @@ export class DataRouter {
     res.send(data);
   }
 
-  placeholderExpansions(_: Request, res: Response) {
+  placeholders(_: Request, res: Response) {
     const data: Partial<JenkinsData> = {
       placeholderExpansions: this.dataManager.jenkins?.placeholderExpansions,
     };

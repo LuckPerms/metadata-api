@@ -3,6 +3,7 @@ import { JenkinsData, fetchData as fetchJenkinsData } from './fetchers/jenkins';
 import { PatreonData, fetchData as fetchPatreonData } from './fetchers/patreon';
 import {
   PatreonDonorsData,
+  PatreonDonorsInfo,
   fetchData as fetchDonorsData,
 } from './fetchers/patreon/donors';
 import {
@@ -11,6 +12,7 @@ import {
 } from './fetchers/crowdin/info';
 
 import { downloadBundles } from './fetchers/crowdin/bundles';
+import { fetchData as fetchSponsorsData } from './fetchers/github/sponsors';
 
 /**
  * Manages data served by the API.
@@ -26,6 +28,8 @@ export class DataManager {
 
   constructor() {
     this.setup = this.refresh().then(() => {
+      console.log('Finished initial data fetch');
+
       setInterval(async () => {
         await this.refreshJenkins();
       }, 30000); // 30 seconds
@@ -72,7 +76,20 @@ export class DataManager {
   }
 
   async refreshDonors() {
-    this.donors = (await fetch(fetchDonorsData)) || this.donors;
+    const resp = await Promise.all([
+      fetch(fetchDonorsData),
+      fetch(fetchSponsorsData),
+    ]);
+
+    const newDonors: PatreonDonorsInfo[] = [];
+
+    for (const res of resp) {
+      if (res) {
+        newDonors.push(...res.donors);
+      }
+    }
+
+    this.donors = { donors: newDonors };
   }
 
   async refreshTranslations() {
@@ -105,6 +122,7 @@ export class TranslationManager {
         return this.refresh();
       })
       .then(() => {
+        console.log('Finished initial translations export');
         setInterval(async () => {
           await this.refresh();
         }, 21660000); // 6 hours (+ 1 minute, to make sure we are behind the getTranslationData task)

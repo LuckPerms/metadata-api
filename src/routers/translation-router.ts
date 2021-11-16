@@ -9,7 +9,7 @@ export class TranslationRouter {
 
   constructor(translationManager: TranslationManager) {
     this.translationManager = translationManager;
-    this.express.get('/:localeId', this.handle);
+    this.express.get('/:localeId', this.handle.bind(this));
   }
 
   handle(req: Request, res: Response) {
@@ -20,7 +20,7 @@ export class TranslationRouter {
       return;
     }
 
-    const language = translationsData.languages.get(localeId);
+    const language = translationsData.languages[localeId];
     if (!language) {
       res.status(404).send('No such language');
     } else if (language.progress === 0) {
@@ -29,7 +29,7 @@ export class TranslationRouter {
         .send('No strings have been translated for ' + language.name);
     } else {
       res.sendFile(`${language.localeTag}.properties`, {
-        root: path.resolve(__dirname, '../translations'),
+        root: path.resolve(process.cwd(), 'translations'),
         dotfiles: 'deny',
         maxAge: 3600000,
         headers: {

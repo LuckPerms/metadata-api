@@ -8,11 +8,15 @@ const urlExport =
   'https://crowdin.com/api/v2/projects/404960/translations/exports';
 
 export async function downloadBundles(
-  languages: Map<string, TranslationsInfo>
+  languages: Record<string, TranslationsInfo>
 ): Promise<void> {
-  await fs.mkdir('./translations');
+  try {
+    await fs.mkdir('./translations');
+  } catch (err: any) {
+    // ignore
+  }
 
-  for (const [languageId, language] of languages) {
+  for (const [languageId, language] of Object.entries(languages)) {
     if (language.progress !== 0) {
       const body = {
         targetLanguageId: languageId,

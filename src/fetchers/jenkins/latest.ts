@@ -3,7 +3,7 @@ import axios from 'axios';
 export interface JenkinsLatestBuildData {
   version: string;
   versionTimestamp: string;
-  downloads: Map<string, string>;
+  downloads: Record<string, string>;
 }
 
 const url =
@@ -15,11 +15,11 @@ export async function fetchData(): Promise<JenkinsLatestBuildData> {
   const version = resp.artifacts[0].fileName.split('-').pop().slice(0, -4);
   const versionTimestamp = resp.timestamp;
 
-  const downloads = new Map<string, string>();
+  const downloads: Record<string, string> = {};
   for (const artifact of resp.artifacts) {
     const path = artifact.relativePath;
     const id = path.split('/')[0];
-    downloads.set(id, `${resp.url}artifact/${path}`);
+    downloads[id] = `${resp.url}artifact/${path}`;
   }
 
   return { version, versionTimestamp, downloads };

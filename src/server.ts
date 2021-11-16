@@ -5,7 +5,6 @@ import { DataRouter } from './routers/data-router';
 import { TranslationRouter } from './routers/translation-router';
 import cors from 'cors';
 import morgan from 'morgan';
-import pretty from './util/pretty';
 
 export class MetadataHttpServer {
   express: express.Express;
@@ -31,7 +30,6 @@ export class MetadataHttpServer {
 
   configure() {
     this.express.use(morgan('dev'));
-    this.express.use(pretty);
     this.express.use(express.urlencoded({ extended: false }));
     this.express.use(cors());
     this.express.disable('x-powered-by');

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
+
 import { MetadataHttpServer } from './server';
 import http from 'http';
 

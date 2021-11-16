@@ -3,7 +3,7 @@ import { crowdinAuth } from './utils';
 
 export interface TranslationsData {
   cacheMaxAge: number;
-  languages: Map<string, TranslationsInfo>;
+  languages: Record<string, TranslationsInfo>;
 }
 
 export interface TranslationsInfo {
@@ -33,37 +33,37 @@ export async function fetchData(): Promise<TranslationsData> {
   };
 }
 
-async function fetchLanguages(): Promise<Map<string, TranslationsInfo>> {
+async function fetchLanguages(): Promise<Record<string, TranslationsInfo>> {
   const resp = (await axios.get(url, crowdinAuth)).data;
 
-  const languages = new Map<string, TranslationsInfo>();
+  const languages: Record<string, TranslationsInfo> = {};
   for (const language of resp.data.targetLanguages) {
-    languages.set(language.id, {
+    languages[language.id] = {
       name: language.name,
       localeTag: language.locale.replace('-', '_'),
       progress: 0,
       contributors: [],
-    });
+    };
   }
 
   return languages;
 }
 
-async function fetchProgressData(languages: Map<string, TranslationsInfo>) {
+async function fetchProgressData(languages: Record<string, TranslationsInfo>) {
   const resp = (await axios.get(urlProgress, crowdinAuth)).data;
 
   for (const progress of resp.data) {
     const id = progress.data.languageId;
     const percent = progress.data.translationProgress;
 
-    const language = languages.get(id);
+    const language = languages[id];
     if (language) {
       language.progress = percent;
     }
   }
 }
 
-async function fetchContributors(languages: Map<string, TranslationsInfo>) {
+async function fetchContributors(languages: Record<string, TranslationsInfo>) {
   const requestId = await fetchContributorsRequest();
   await fetchContributorsWaitForReport(requestId);
   const contributorsReport = await fetchContributorsDownloadReport(requestId);
@@ -71,7 +71,7 @@ async function fetchContributors(languages: Map<string, TranslationsInfo>) {
   for (const user of contributorsReport.data) {
     if (user.translated >= 30) {
       for (const lang of user.languages) {
-        const language = languages.get(lang.id);
+        const language = languages[lang.id];
         if (language) {
           language.contributors.push({
             name: user.user.username,
