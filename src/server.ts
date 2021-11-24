@@ -45,7 +45,7 @@ export class MetadataHttpServer {
   }
 
   health(req: Request, res: Response) {
-    res.status(200).send({ status: 'ok' });
+    res.status(200).header('Cache-Control', 'no-cache').send({ status: 'ok' });
   }
 
   generic(req: Request, res: Response) {
