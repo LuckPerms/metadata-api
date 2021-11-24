@@ -36,11 +36,16 @@ export class MetadataHttpServer {
   }
 
   setupRoutes() {
+    this.express.use('/health', this.health);
     this.express.use('/data', this.dataRouter.express);
     this.express.use('/translation', this.translationRouter.express);
 
     this.express.use(this.generic);
     this.express.use(this.errorHandler);
+  }
+
+  health(req: Request, res: Response) {
+    res.status(200).send({ status: 'ok' });
   }
 
   generic(req: Request, res: Response) {
