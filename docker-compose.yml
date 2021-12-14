@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   metadata-api:
-    image: ghcr.io/LuckPerms/metadata-api
+    image: ghcr.io/luckperms/metadata-api
     ports:
       - 3000:3000
     environment:
