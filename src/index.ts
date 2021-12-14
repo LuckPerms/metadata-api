@@ -13,6 +13,8 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+registerShutdownHooks(server);
+
 function normalizePort(val: string) {
   const port = parseInt(val, 10);
 
@@ -55,4 +57,27 @@ function onListening() {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr?.port;
   console.log('Listening on ' + bind);
+}
+
+function registerShutdownHooks(server: http.Server) {
+  const signals: Record<string, number> = {
+    SIGHUP: 1,
+    SIGINT: 2,
+    SIGTERM: 15,
+  };
+
+  function shutdown(signal: string, value: number) {
+    console.log('Shutting down...');
+    server.close(() => {
+      console.log(`Server stopped by ${signal} with value ${value}`);
+      process.exit(128 + value);
+    });
+  }
+
+  Object.keys(signals).forEach(signal => {
+    process.on(signal, () => {
+      console.log(`Process received a ${signal} signal`);
+      shutdown(signal, signals[signal]);
+    });
+  });
 }
