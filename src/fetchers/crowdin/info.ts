@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { crowdinAuth } from './utils';
+import { canAuthenticate, crowdinAuth } from './utils';
 
 export interface TranslationsData {
   cacheMaxAge: number;
@@ -23,6 +23,10 @@ const urlProgress = url + '/languages/progress?limit=100';
 const urlContributors = url + '/reports';
 
 export async function fetchData(): Promise<TranslationsData> {
+  if (!canAuthenticate()) {
+    throw new Error('Auth key not specified');
+  }
+
   const languages = await fetchLanguages();
   await fetchProgressData(languages);
   await fetchContributors(languages);

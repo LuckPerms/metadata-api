@@ -1,7 +1,7 @@
 import { TranslationsInfo } from './info';
 import axios from 'axios';
 import { createWriteStream } from 'fs';
-import { crowdinAuth } from './utils';
+import { canAuthenticate, crowdinAuth } from './utils';
 import fs from 'fs/promises';
 
 const urlExport =
@@ -10,6 +10,10 @@ const urlExport =
 export async function downloadBundles(
   languages: Record<string, TranslationsInfo>
 ): Promise<void> {
+  if (!canAuthenticate()) {
+    throw new Error('Auth key not specified');
+  }
+
   try {
     await fs.mkdir('./translations');
   } catch (err: any) {

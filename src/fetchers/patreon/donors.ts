@@ -1,4 +1,4 @@
-import { encodePatreonUrl, patreonAuth } from './utils';
+import { canAuthenticate, encodePatreonUrl, patreonAuth } from './utils';
 
 import axios from 'axios';
 
@@ -17,6 +17,10 @@ const startUrl = encodePatreonUrl(
 );
 
 export async function fetchData(): Promise<PatreonDonorsData> {
+  if (!canAuthenticate()) {
+    throw new Error('Auth key not specified');
+  }
+
   let url: string | null = startUrl;
   let donors: Array<PatreonDonorsInfo> = [];
 

@@ -1,8 +1,12 @@
 import { PatreonDonorsData, PatreonDonorsInfo } from '../patreon/donors';
 
-import { githubQuery } from './utils';
+import { canAuthenticate, githubQuery } from './utils';
 
 export async function fetchData(): Promise<PatreonDonorsData> {
+  if (!canAuthenticate()) {
+    throw new Error('Auth key not specified');
+  }
+
   let donors: Array<PatreonDonorsInfo> = [];
 
   const resp = await githubQuery(
