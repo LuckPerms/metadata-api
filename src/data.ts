@@ -10,8 +10,8 @@ import {
   TranslationsData,
   fetchData as fetchTranslationsData,
 } from './fetchers/crowdin/info';
-
 import { downloadBundles } from './fetchers/crowdin/bundles';
+import { filePlugin, fileWeb } from './fetchers/crowdin/files';
 import { fetchData as fetchSponsorsData } from './fetchers/github/sponsors';
 
 /**
@@ -136,7 +136,8 @@ export class TranslationManager {
     }
 
     try {
-      await downloadBundles(languages);
+      await downloadBundles(languages, filePlugin);
+      await downloadBundles(languages, fileWeb);
     } catch (err) {
       console.error('Error downloading translations', err);
     }

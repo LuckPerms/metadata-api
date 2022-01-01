@@ -1,14 +1,17 @@
-import { TranslationsInfo } from './info';
 import axios from 'axios';
-import { createWriteStream } from 'fs';
-import { canAuthenticate, crowdinAuth } from './utils';
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
+
+import { TranslationsInfo } from './info';
+import { TranslationFile } from './files';
+import { canAuthenticate, crowdinAuth } from './utils';
 
 const urlExport =
   'https://crowdin.com/api/v2/projects/404960/translations/exports';
 
 export async function downloadBundles(
-  languages: Record<string, TranslationsInfo>
+  languages: Record<string, TranslationsInfo>,
+  file: TranslationFile
 ): Promise<void> {
   if (!canAuthenticate()) {
     throw new Error('Auth key not specified');
@@ -20,11 +23,17 @@ export async function downloadBundles(
     // ignore
   }
 
+  try {
+    await fs.mkdir('./translations/' + file.path);
+  } catch (err: any) {
+    // ignore
+  }
+
   for (const [languageId, language] of Object.entries(languages)) {
-    if (language.progress !== 0) {
+    if (file.getProgress(language) !== 0) {
       const body = {
         targetLanguageId: languageId,
-        fileIds: [2],
+        fileIds: [file.id],
         skipUntranslatedStrings: true,
       };
       const request = await axios.post(urlExport, body, crowdinAuth);
@@ -35,7 +44,7 @@ export async function downloadBundles(
       });
 
       const fileStream = createWriteStream(
-        `./translations/${language.localeTag}.properties`
+        `./translations/${file.path}/${language.localeTag}.${file.exportExtension}`
       );
       downloadRequest.data.pipe(fileStream);
     }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { filePlugin, fileWeb, TranslationFile } from './files';
 import { canAuthenticate, crowdinAuth } from './utils';
 
 export interface TranslationsData {
@@ -10,6 +11,7 @@ export interface TranslationsInfo {
   name: string;
   localeTag: string;
   progress: number;
+  progressWeb: number;
   contributors: Array<TranslationsContributorInfo>;
 }
 
@@ -19,7 +21,8 @@ export interface TranslationsContributorInfo {
 }
 
 const url = 'https://crowdin.com/api/v2/projects/404960';
-const urlProgress = url + '/languages/progress?limit=100';
+const urlProgress = (fileId: number) =>
+  url + `/files/${fileId}/languages/progress?limit=100`;
 const urlContributors = url + '/reports';
 
 export async function fetchData(): Promise<TranslationsData> {
@@ -28,7 +31,8 @@ export async function fetchData(): Promise<TranslationsData> {
   }
 
   const languages = await fetchLanguages();
-  await fetchProgressData(languages);
+  await fetchProgressData(languages, filePlugin);
+  await fetchProgressData(languages, fileWeb);
   await fetchContributors(languages);
 
   return {
@@ -46,6 +50,7 @@ async function fetchLanguages(): Promise<Record<string, TranslationsInfo>> {
       name: language.name,
       localeTag: language.locale.replace('-', '_'),
       progress: 0,
+      progressWeb: 0,
       contributors: [],
     };
   }
@@ -53,8 +58,11 @@ async function fetchLanguages(): Promise<Record<string, TranslationsInfo>> {
   return languages;
 }
 
-async function fetchProgressData(languages: Record<string, TranslationsInfo>) {
-  const resp = (await axios.get(urlProgress, crowdinAuth)).data;
+async function fetchProgressData(
+  languages: Record<string, TranslationsInfo>,
+  file: TranslationFile
+) {
+  const resp = (await axios.get(urlProgress(file.id), crowdinAuth)).data;
 
   for (const progress of resp.data) {
     const id = progress.data.languageId;
@@ -62,7 +70,7 @@ async function fetchProgressData(languages: Record<string, TranslationsInfo>) {
 
     const language = languages[id];
     if (language) {
-      language.progress = percent;
+      file.setProgress(language, percent);
     }
   }
 }
