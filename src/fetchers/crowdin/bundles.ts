@@ -1,6 +1,6 @@
 import axios from 'axios';
 import fs from 'fs/promises';
-import { createWriteStream } from 'fs';
+import { createWriteStream, writeFileSync } from 'fs';
 
 import { TranslationsInfo } from './info';
 import { TranslationFile } from './files';
@@ -39,14 +39,54 @@ export async function downloadBundles(
       const request = await axios.post(urlExport, body, crowdinAuth);
 
       const url = request.data.data.url;
-      const downloadRequest = await axios.get(url, {
-        responseType: 'stream',
-      });
+      if (file.exportExtension === 'json') {
+        await saveJsonFile(url, file, language);
+      } else {
+        await saveRegularFile(url, file, language);
+      }
+    }
+  }
+}
 
-      const fileStream = createWriteStream(
-        `./translations/${file.path}/${language.localeTag}.${file.exportExtension}`
-      );
-      downloadRequest.data.pipe(fileStream);
+async function saveRegularFile(
+  url: string,
+  file: TranslationFile,
+  language: TranslationsInfo
+) {
+  const downloadRequest = await axios.get(url, {
+    responseType: 'stream',
+  });
+
+  const fileStream = createWriteStream(
+    `./translations/${file.path}/${language.localeTag}.${file.exportExtension}`
+  );
+  downloadRequest.data.pipe(fileStream);
+}
+
+async function saveJsonFile(
+  url: string,
+  file: TranslationFile,
+  language: TranslationsInfo
+) {
+  const data = (await axios.get(url)).data;
+  removeEmptyStrings(data);
+
+  writeFileSync(
+    `./translations/${file.path}/${language.localeTag}.${file.exportExtension}`,
+    JSON.stringify(data, null, 2)
+  );
+}
+
+function removeEmptyStrings(obj: any) {
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'object') {
+      removeEmptyStrings(v);
+
+      if (!Object.keys(v as any).length) {
+        delete obj[k];
+      }
+    } else if (typeof v === 'string' && !v.length) {
+      delete obj[k];
     }
   }
 }
