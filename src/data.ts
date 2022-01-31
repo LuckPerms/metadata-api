@@ -37,9 +37,6 @@ export class DataManager {
       setInterval(async () => {
         await this.refreshDiscord();
         await this.refreshPatreon();
-      }, 300000); // 5 minutes
-
-      setInterval(async () => {
         await this.refreshDonors();
       }, 3600000); // 1 hour
 
