@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
-
-import { TranslationManager } from '../data';
-import { FileType, files } from '../fetchers/crowdin/files';
+import { files, FileType } from '../fetchers/crowdin/files';
+import { TranslationManager } from '../translation-manager';
 
 export class TranslationRouter {
   translationManager: TranslationManager;

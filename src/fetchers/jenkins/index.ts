@@ -1,16 +1,16 @@
 import {
-  JenkinsAdditionalPluginsData,
   fetchData as fetchAdditionalPlugins,
+  JenkinsAdditionalPluginsData,
 } from './additional-plugins';
-import { JenkinsChangelogData, fetchData as fetchChangeLog } from './changelog';
+import { fetchData as fetchChangeLog, JenkinsChangelogData } from './changelog';
 import {
-  JenkinsExpansionsData,
   fetchData as fetchExpansions,
+  JenkinsExpansionsData,
 } from './extensions';
-import { JenkinsLatestBuildData, fetchData as fetchLatest } from './latest';
+import { fetchData as fetchLatest, JenkinsLatestBuildData } from './latest';
 import {
-  JenkinsPlaceholdersData,
   fetchData as fetchPlaceholders,
+  JenkinsPlaceholdersData,
 } from './placeholders';
 
 export type JenkinsData = JenkinsLatestBuildData &

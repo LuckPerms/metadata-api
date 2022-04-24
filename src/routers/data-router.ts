@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
-
+import { DataManager } from '../data-manager';
 import { CombinedData } from '../fetchers';
-import { DataManager } from '../data';
 import { DiscordData } from '../fetchers/discord';
 import { JenkinsData } from '../fetchers/jenkins';
 import { PatreonData } from '../fetchers/patreon';

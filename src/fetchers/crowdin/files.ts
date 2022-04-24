@@ -1,4 +1,4 @@
-import { TranslationsInfo } from "./info";
+import { TranslationsInfo } from './info';
 
 export interface TranslationFile {
   id: number;

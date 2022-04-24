@@ -1,6 +1,5 @@
-import { encodePatreonUrl, patreonAuth } from './utils';
-
 import axios from 'axios';
+import { encodePatreonUrl, patreonAuth } from './utils';
 
 export interface PatreonCountData {
   patreonCount: number;

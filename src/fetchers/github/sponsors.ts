@@ -1,5 +1,4 @@
 import { PatreonDonorsData, PatreonDonorsInfo } from '../patreon/donors';
-
 import { canAuthenticate, githubQuery } from './utils';
 
 export async function fetchData(): Promise<PatreonDonorsData> {

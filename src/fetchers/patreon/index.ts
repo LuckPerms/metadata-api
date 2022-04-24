@@ -1,4 +1,4 @@
-import { PatreonCountData, fetchData as fetchPatreonCount } from './count';
+import { fetchData as fetchPatreonCount, PatreonCountData } from './count';
 import { canAuthenticate } from './utils';
 
 export type PatreonData = PatreonCountData;

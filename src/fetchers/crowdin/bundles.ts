@@ -1,9 +1,8 @@
 import axios from 'axios';
-import fs from 'fs/promises';
 import { createWriteStream, writeFileSync } from 'fs';
-
-import { TranslationsInfo } from './info';
+import fs from 'fs/promises';
 import { TranslationFile } from './files';
+import { TranslationsInfo } from './info';
 import { canAuthenticate, crowdinAuth } from './utils';
 
 const urlExport =

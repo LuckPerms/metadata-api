@@ -1,12 +1,12 @@
-import { DataManager, TranslationManager } from './data';
+import cors from 'cors';
 import express, { Request, Response } from 'express';
-
+import morgan from 'morgan';
+import { DataManager } from './data-manager';
 import { DataRouter } from './routers/data-router';
 import { TranslationRouter } from './routers/translation-router';
-import cors from 'cors';
-import morgan from 'morgan';
+import { TranslationManager } from './translation-manager';
 
-export class MetadataHttpServer {
+export class MetadataApiApp {
   express: express.Express;
 
   dataManager: DataManager;

@@ -1,6 +1,5 @@
-import { canAuthenticate, encodePatreonUrl, patreonAuth } from './utils';
-
 import axios from 'axios';
+import { canAuthenticate, encodePatreonUrl, patreonAuth } from './utils';
 
 export interface PatreonDonorsData {
   donors: Array<PatreonDonorsInfo>;
