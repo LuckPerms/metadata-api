@@ -1,5 +1,6 @@
 import cors from 'cors';
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
+import prom from 'express-prom-bundle';
 import morgan from 'morgan';
 import { DataManager } from './data-manager';
 import { DataRouter } from './routers/data-router';
@@ -33,31 +34,34 @@ export class MetadataApiApp {
     this.express.use(express.urlencoded({ extended: false }));
     this.express.use(cors());
     this.express.disable('x-powered-by');
+
+    if (process.env.METADATA_API_METRICS) {
+      this.express.use(
+        '/metrics',
+        (req: Request, res: Response, next: NextFunction) => {
+          if (req.header('X-Forwarded-For')) {
+            res.status(401).send('Unauthorized');
+          } else {
+            next();
+          }
+        }
+      );
+      this.express.use(
+        prom({
+          includePath: true,
+          includeUp: false,
+        })
+      );
+    }
   }
 
   setupRoutes() {
     this.express.use('/health', this.health);
     this.express.use('/data', this.dataRouter.express);
     this.express.use('/translation', this.translationRouter.express);
-
-    this.express.use(this.generic);
-    this.express.use(this.errorHandler);
   }
 
   health(req: Request, res: Response) {
     res.status(200).header('Cache-Control', 'no-cache').send({ status: 'ok' });
-  }
-
-  generic(req: Request, res: Response) {
-    res.status(404).send('Endpoint not found');
-  }
-
-  errorHandler(err: any, req: Request, res: Response) {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // render the error page
-    res.status(err.status || 500);
   }
 }
