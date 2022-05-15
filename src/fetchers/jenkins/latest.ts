@@ -26,9 +26,9 @@ export async function fetchData(): Promise<JenkinsLatestBuildData> {
 
     let url;
     if (hasLoader) {
-      url = `https://download.luckperms.net/${buildNumber}/${platform}/${fileName}`;
-    } else {
       url = `https://download.luckperms.net/${buildNumber}/${platform}/loader/${fileName}`;
+    } else {
+      url = `https://download.luckperms.net/${buildNumber}/${platform}/${fileName}`;
     }
 
     downloads[platform] = url;
