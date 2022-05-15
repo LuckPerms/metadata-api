@@ -7,7 +7,7 @@ export interface JenkinsLatestBuildData {
 }
 
 const url =
-  'https://ci.lucko.me/job/LuckPerms/lastSuccessfulBuild/api/json?tree=url,timestamp,artifacts[fileName,relativePath]';
+  'https://ci.lucko.me/job/LuckPerms/lastSuccessfulBuild/api/json?tree=id,timestamp,artifacts[fileName,relativePath]';
 
 export async function fetchData(): Promise<JenkinsLatestBuildData> {
   const resp = (await axios.get(url)).data;
@@ -15,11 +15,23 @@ export async function fetchData(): Promise<JenkinsLatestBuildData> {
   const version = resp.artifacts[0].fileName.split('-').pop().slice(0, -4);
   const versionTimestamp = resp.timestamp;
 
+  const buildNumber = resp.id;
+
   const downloads: Record<string, string> = {};
   for (const artifact of resp.artifacts) {
-    const path = artifact.relativePath;
-    const id = path.split('/')[0];
-    downloads[id] = `${resp.url}artifact/${path}`;
+    const { relativePath, fileName } = artifact;
+
+    const platform = relativePath.split('/')[0];
+    const hasLoader = relativePath.split('/')[1] === 'loader';
+
+    let url;
+    if (hasLoader) {
+      url = `https://download.luckperms.net/${buildNumber}/${platform}/${fileName}`;
+    } else {
+      url = `https://download.luckperms.net/${buildNumber}/${platform}/loader/${fileName}`;
+    }
+
+    downloads[platform] = url;
   }
 
   return { version, versionTimestamp, downloads };
