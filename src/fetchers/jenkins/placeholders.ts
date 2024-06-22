@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { jenkinsUrl } from './util';
 
 export interface JenkinsPlaceholdersData {
   placeholderExpansions: Record<string, string>;
 }
 
-const url =
-  'https://ci.lucko.me/job/LuckPermsPlaceholders/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]';
+const url = jenkinsUrl + 
+  'job/LuckPermsPlaceholders/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]';
 
 export async function fetchData(): Promise<JenkinsPlaceholdersData> {
   const resp = (await axios.get(url)).data;

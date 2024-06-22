@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jenkinsUrl } from './util';
 
 export interface JenkinsLatestBuildData {
   version: string;
@@ -6,8 +7,8 @@ export interface JenkinsLatestBuildData {
   downloads: Record<string, string>;
 }
 
-const url =
-  'https://ci.lucko.me/job/LuckPerms/lastSuccessfulBuild/api/json?tree=id,timestamp,artifacts[fileName,relativePath]';
+const url = jenkinsUrl +
+  'job/LuckPerms/lastSuccessfulBuild/api/json?tree=id,timestamp,artifacts[fileName,relativePath]';
 
 export async function fetchData(): Promise<JenkinsLatestBuildData> {
   const resp = (await axios.get(url)).data;

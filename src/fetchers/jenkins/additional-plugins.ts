@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jenkinsUrl } from './util';
 
 export interface JenkinsAdditionalPluginsData {
   additionalPlugins: Record<AdditionalPluginId, string>;
@@ -15,7 +16,7 @@ export async function fetchData(): Promise<JenkinsAdditionalPluginsData> {
 }
 
 async function fetchData0(id: string): Promise<string> {
-  const url = `https://ci.lucko.me/job/${id}/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]`;
+  const url = `${jenkinsUrl}job/${id}/lastSuccessfulBuild/api/json?tree=url,artifacts[fileName,relativePath]`;
   const resp = (await axios.get(url)).data;
 
   const artifact = resp.artifacts[0];

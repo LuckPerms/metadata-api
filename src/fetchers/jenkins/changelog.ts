@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jenkinsUrl } from './util';
 
 export interface JenkinsChangelogData {
   changeLog: Array<JenkinsChangeData>;
@@ -11,8 +12,8 @@ export interface JenkinsChangeData {
   commit: string;
 }
 
-const url =
-  'https://ci.lucko.me/job/LuckPerms/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]';
+const url = jenkinsUrl +
+  'job/LuckPerms/api/json?tree=builds[timestamp,result,artifacts[fileName],changeSet[items[msg,commitId]]]';
 
 export async function fetchData(): Promise<JenkinsChangelogData> {
   const resp = (await axios.get(url)).data;
